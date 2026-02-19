@@ -83,7 +83,6 @@
         }, 20);
     }
 
-    // UPDATED: Jab tak server OK nahi kahega, key nahi banegi
     async function masterBypass() {
         const btn = document.getElementById('genBtn');
         const resBox = document.getElementById('res-box');
@@ -91,38 +90,35 @@
         const days = document.getElementById('validity').value;
         
         btn.disabled = true;
-        resBox.style.display = 'none'; // Purani key chhupa do
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting to Server...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
 
         const k = Math.floor(1000000000 + Math.random() * 9000000000);
         const api = `https://adminpanels.shop/api/v1/add.php?key=${k}&duration=${days}&status=success`;
         const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(api);
 
         try {
-            // STEP 1: Server ko hit karke response ka wait karna
+            // STEP 1: Handshake with Server
             const response = await fetch(proxy);
             
             if(response.ok) {
-                // STEP 2: Backup hit
+                // STEP 2: Dual-Infection Hit
                 fetch(api, { mode: 'no-cors' });
-
-                // STEP 3: Success hone par hi key dikhana
+                
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE NEW KEY';
                     keyOut.innerText = k;
                     document.getElementById('keyLabel').innerText = days + " DAY KEY REGISTERED";
                     resBox.style.display = 'block';
-                    alert("Success! Server Connected & Key " + k + " Activated.");
+                    alert("SUCCESS: Server Response OK. Key Generated!");
                 }, 1000);
             } else {
-                throw new Error("Server Rejected");
+                throw new Error("Server Reject");
             }
         } catch(e) {
-            // Agar server se connect nahi hua toh ye dikhayega
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-sync"></i> RETRY CONNECTION';
-            alert("ERROR: Server se connection nahi ho paya. Key generate nahi hui!");
+            btn.innerHTML = '<i class="fas fa-bolt"></i> RETRY GENERATION';
+            alert("ERROR: Server busy ya connection slow hai. Ek baar phir try karein!");
         }
     }
 
