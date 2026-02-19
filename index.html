@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRIP MASTER | SECURE PANEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --p: #7367f0; --bg: #161d31; --c: #283046; --s: #28c76f; }
+        body { background: var(--bg); color: #b4b7bd; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { width: 90%; max-width: 400px; background: var(--c); padding: 30px; border-radius: 15px; border-bottom: 5px solid var(--p); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .login-box input, .select-box { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #161d31; color: #fff; box-sizing: border-box; outline: none; }
+        #adminPanel, #loadingScreen { display: none; }
+        .status-badge { display: inline-block; padding: 5px 12px; background: rgba(40, 199, 111, 0.1); color: var(--s); border-radius: 20px; font-size: 11px; font-weight: bold; margin: 15px 0; }
+        .btn { width: 100%; padding: 15px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .progress-container { width: 100%; background: #161d31; border-radius: 10px; margin: 20px 0; height: 10px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--p); }
+        #res-box { display: none; margin-top: 25px; padding: 20px; border: 2px dashed var(--s); background: rgba(40,199,111,0.05); color: var(--s); border-radius: 12px; }
+        #key-out { font-size: 32px; font-weight: bold; display: block; letter-spacing: 4px; font-family: monospace; }
+        label { display: block; text-align: left; font-size: 12px; margin-top: 10px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="loginSection">
+    <h2>ADMIN LOGIN</h2>
+    <div class="login-box">
+        <input type="text" id="user" placeholder="Username">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="btn" onclick="checkLogin()">VERIFY IDENTITY</button>
+    </div>
+</div>
+
+<div class="card" id="loadingScreen">
+    <i class="fas fa-shield-alt fa-3x" style="color: var(--p); margin-bottom: 20px;"></i>
+    <h3>Security Check...</h3>
+    <div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
+</div>
+
+<div class="card" id="adminPanel">
+    <h1>DRIP MASTER</h1>
+    <div class="status-badge"><i class="fas fa-check-circle"></i> SYSTEM ACTIVE</div>
+
+    <div style="text-align: left; margin-bottom: 15px;">
+        <label>Set Key Validity:</label>
+        <select id="validity" class="select-box">
+            <option value="1">1 DAY</option>
+            <option value="7">7 DAYS</option>
+            <option value="30">30 DAYS</option>
+        </select>
+    </div>
+
+    <button class="btn" id="genBtn" onclick="masterBypass()">
+        <i class="fas fa-bolt"></i> GENERATE KEY
+    </button>
+
+    <div id="res-box" onclick="copyKey()">
+        <span style="font-size:10px; font-weight:bold;" id="keyLabel">KEY GENERATED</span>
+        <span id="key-out"></span>
+        <p style="margin-top:10px; font-size:10px; color:#82868b;">Click to copy & login</p>
+    </div>
+</div>
+
+<script>
+    function checkLogin() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(u === "ds teem" && p === "n") { showLoading(); }
+        else { alert("Incorrect Credentials!"); }
+    }
+
+    function showLoading() {
+        document.getElementById('loginSection').style.display = "none";
+        document.getElementById('loadingScreen').style.display = "block";
+        let w = 0;
+        const b = document.getElementById('pBar');
+        const i = setInterval(() => {
+            if (w >= 100) {
+                clearInterval(i);
+                document.getElementById('loadingScreen').style.display = "none";
+                document.getElementById('adminPanel').style.display = "block";
+            } else { w++; b.style.width = w + '%'; }
+        }, 20);
+    }
+
+    // UPDATED: Jab tak server OK nahi kahega, key nahi banegi
+    async function masterBypass() {
+        const btn = document.getElementById('genBtn');
+        const resBox = document.getElementById('res-box');
+        const keyOut = document.getElementById('key-out');
+        const days = document.getElementById('validity').value;
+        
+        btn.disabled = true;
+        resBox.style.display = 'none'; // Purani key chhupa do
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting to Server...';
+
+        const k = Math.floor(1000000000 + Math.random() * 9000000000);
+        const api = `https://adminpanels.shop/api/v1/add.php?key=${k}&duration=${days}&status=success`;
+        const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(api);
+
+        try {
+            // STEP 1: Server ko hit karke response ka wait karna
+            const response = await fetch(proxy);
+            
+            if(response.ok) {
+                // STEP 2: Backup hit
+                fetch(api, { mode: 'no-cors' });
+
+                // STEP 3: Success hone par hi key dikhana
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE NEW KEY';
+                    keyOut.innerText = k;
+                    document.getElementById('keyLabel').innerText = days + " DAY KEY REGISTERED";
+                    resBox.style.display = 'block';
+                    alert("Success! Server Connected & Key " + k + " Activated.");
+                }, 1000);
+            } else {
+                throw new Error("Server Rejected");
+            }
+        } catch(e) {
+            // Agar server se connect nahi hua toh ye dikhayega
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync"></i> RETRY CONNECTION';
+            alert("ERROR: Server se connection nahi ho paya. Key generate nahi hui!");
+        }
+    }
+
+    function copyKey() {
+        navigator.clipboard.writeText(document.getElementById('key-out').innerText);
+        alert("Key Copied!");
+    }
+</script>
+
+</body>
+</html>
