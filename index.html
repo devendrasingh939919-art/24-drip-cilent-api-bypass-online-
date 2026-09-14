@@ -2,131 +2,795 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRIP MASTER | SECURE PANEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZX MAMUN OFC - BALA MOD PRO</title>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
-        :root { --p: #7367f0; --bg: #161d31; --c: #283046; --s: #28c76f; }
-        body { background: var(--bg); color: #b4b7bd; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { width: 90%; max-width: 400px; background: var(--c); padding: 30px; border-radius: 15px; border-bottom: 5px solid var(--p); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        .login-box input, .select-box { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #161d31; color: #fff; box-sizing: border-box; outline: none; }
-        #adminPanel, #loadingScreen { display: none; }
-        .status-badge { display: inline-block; padding: 5px 12px; background: rgba(40, 199, 111, 0.1); color: var(--s); border-radius: 20px; font-size: 11px; font-weight: bold; margin: 15px 0; }
-        .btn { width: 100%; padding: 15px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
-        .progress-container { width: 100%; background: #161d31; border-radius: 10px; margin: 20px 0; height: 10px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: var(--p); }
-        #res-box { display: none; margin-top: 25px; padding: 20px; border: 2px dashed var(--s); background: rgba(40,199,111,0.05); color: var(--s); border-radius: 12px; }
-        #key-out { font-size: 32px; font-weight: bold; display: block; letter-spacing: 4px; font-family: monospace; }
-        label { display: block; text-align: left; font-size: 12px; margin-top: 10px; color: #888; }
+        :root {
+            --neon-gold: #f59e0b;
+            --neon-cyan: #06b6d4;
+            --neon-red: #ef4444;
+            --neon-green: #10b981;
+            --bg-dark: #030712;
+            --card-bg: rgba(15, 23, 42, 0.85);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Rajdhani', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { 
+            background: var(--bg-dark);
+            color: #f8fafc; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar Header */
+        .top-navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px 18px;
+            border-bottom: 2px solid var(--neon-gold);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: 2px solid var(--neon-gold);
+            color: var(--neon-gold);
+            font-size: 20px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.92);
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-gold), 0 0 20px var(--neon-gold);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Sliding Sidebar Navigation Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -290px;
+            width: 270px;
+            height: 100%;
+            background: #090d16;
+            border-right: 2px solid var(--neon-cyan);
+            box-shadow: 10px 0 30px rgba(6, 182, 212, 0.3);
+            z-index: 999;
+            transition: all 0.3s ease;
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .sidebar-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--neon-gold);
+            color: var(--neon-gold);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+        }
+
+        /* App Content Area */
+        .container {
+            padding: 20px 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section-pane {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .section-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .neon-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(245, 158, 11, 0.08);
+            margin-bottom: 20px;
+            animation: neonPulse 3s infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            0% { border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); }
+            100% { border-color: rgba(245, 158, 11, 0.7); box-shadow: 0 0 25px rgba(245, 158, 11, 0.2); }
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--neon-gold);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+
+        .neon-input, .neon-textarea, .neon-select {
+            width: 100%;
+            padding: 12px 14px;
+            background: #020617;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .neon-input:focus, .neon-textarea:focus, .neon-select:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+        }
+
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .grid-3 div { text-align: center; }
+        .grid-3 label { font-size: 11px; margin-top: 4px; color: #64748b; }
+
+        .btn-neon {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-neon:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
+        }
+
+        /* User Key Control Table */
+        .search-box { margin-bottom: 15px; }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(2, 6, 23, 0.6);
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+        th, td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 14px; }
+        th { color: var(--neon-cyan); background: rgba(15, 23, 42, 0.9); font-weight: 700; text-transform: uppercase; font-size: 12px; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4); }
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-family: monospace; font-size: 12px; }
+        .badge-expired { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+        .action-flex { display: flex; gap: 6px; }
+        .btn-act {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-act-copy { background: rgba(6, 182, 212, 0.2); color: var(--neon-cyan); border: 1px solid rgba(6, 182, 212, 0.4); }
+        .btn-act-edit { background: rgba(245, 158, 11, 0.2); color: var(--neon-gold); border: 1px solid rgba(245, 158, 11, 0.4); }
+        .btn-act-del { background: rgba(239, 68, 68, 0.2); color: var(--neon-red); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-act-unlink { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+        /* Modal Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: #0f172a;
+            border: 1px solid var(--neon-gold);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 450px;
+            padding: 22px;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 18px; top: 15px;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div class="card" id="loginSection">
-    <h2>ADMIN LOGIN</h2>
-    <div class="login-box">
-        <input type="text" id="user" placeholder="Username">
-        <input type="password" id="pass" placeholder="Password">
-        <button class="btn" onclick="checkLogin()">VERIFY IDENTITY</button>
-    </div>
-</div>
-
-<div class="card" id="loadingScreen">
-    <i class="fas fa-shield-alt fa-3x" style="color: var(--p); margin-bottom: 20px;"></i>
-    <h3>Security Check...</h3>
-    <div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
-</div>
-
-<div class="card" id="adminPanel">
-    <h1>DRIP MASTER</h1>
-    <div class="status-badge"><i class="fas fa-check-circle"></i> SYSTEM ACTIVE</div>
-
-    <div style="text-align: left; margin-bottom: 15px;">
-        <label>Set Key Validity:</label>
-        <select id="validity" class="select-box">
-            <option value="1">1 DAY</option>
-            <option value="7">7 DAYS</option>
-            <option value="30">30 DAYS</option>
-        </select>
+    <!-- Top Bar -->
+    <div class="top-navbar">
+        <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <div class="brand-title"><i class="fa-solid fa-crown" style="color: var(--neon-gold);"></i> VIP OFC</div>
     </div>
 
-    <button class="btn" id="genBtn" onclick="masterBypass()">
-        <i class="fas fa-bolt"></i> GENERATE KEY
-    </button>
-
-    <div id="res-box" onclick="copyKey()">
-        <span style="font-size:10px; font-weight:bold;" id="keyLabel">KEY GENERATED</span>
-        <span id="key-out"></span>
-        <p style="margin-top:10px; font-size:10px; color:#82868b;">Click to copy & login</p>
+    <!-- Sidebar Overlay & Drawer Navigation -->
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>MAIN MENU</h2>
+            <button class="close-sidebar" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchSection('sec-create', this)">
+                <i class="fa-solid fa-user-plus" style="color: var(--neon-gold);"></i> 1. Create New User
+            </li>
+            <li class="nav-item" onclick="switchSection('sec-control', this)">
+                <i class="fa-solid fa-users-gear" style="color: var(--neon-cyan);"></i> 2. User Key Control
+            </li>
+            <li class="nav-item" onclick="switchSection('sec-apk', this)">
+                <i class="fa-solid fa-cloud-arrow-up" style="color: var(--neon-green);"></i> 3. Update System APK
+            </li>
+        </ul>
     </div>
-</div>
+
+    <!-- Main Dashboard Area -->
+    <div class="container">
+
+        <!-- SECTION 1: CREATE NEW USER -->
+        <div id="sec-create" class="section-pane active">
+            <div class="neon-card">
+                <div class="card-title"><i class="fa-solid fa-key"></i> CREATE NEW ACCESS USER</div>
+                
+                <div class="form-group">
+                    <label>Activation Key / Password:</label>
+                    <input type="text" id="new_key" class="neon-input" placeholder="Enter key name (e.g. MAMUN123)">
+                </div>
+
+                <div class="form-group">
+                    <label>Set Access Duration:</label>
+                    <div class="grid-3">
+                        <div>
+                            <input type="number" id="inp_days" class="neon-input" value="0" min="0">
+                            <label>Days</label>
+                        </div>
+                        <div>
+                            <input type="number" id="inp_hours" class="neon-input" value="0" min="0">
+                            <label>Hours</label>
+                        </div>
+                        <div>
+                            <input type="number" id="inp_mins" class="neon-input" value="0" min="0">
+                            <label>Minutes</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-neon" onclick="addKey()"><i class="fa-solid fa-bolt"></i> Generate Key</button>
+                <p id="key-status" style="margin-top:12px; text-align:center; font-weight:700; font-size: 13px;"></p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: USER KEY CONTROL -->
+        <div id="sec-control" class="section-pane">
+            <div class="neon-card" style="border-color: rgba(6, 182, 212, 0.4);">
+                <div class="card-title" style="color: var(--neon-cyan);"><i class="fa-solid fa-list-check"></i> USER KEY CONTROL</div>
+                
+                <div class="search-box">
+                    <input type="text" id="search_input" class="neon-input" placeholder="🔍 Search key/password..." onkeyup="filterKeys()">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Remaining Time / Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="key-list-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: UPDATE SYSTEM APK -->
+        <div id="sec-apk" class="section-pane">
+            <div class="neon-card" style="border-color: rgba(16, 185, 129, 0.4);">
+                <div class="card-title" style="color: var(--neon-green);"><i class="fa-solid fa-gear"></i> UPDATE SYSTEM APK</div>
+                
+                <div class="form-group">
+                    <label>Version Code:</label>
+                    <input type="text" id="version" class="neon-input" placeholder="1.0">
+                </div>
+
+                <div class="form-group">
+                    <label>Download Link:</label>
+                    <input type="text" id="link" class="neon-input" placeholder="https://">
+                </div>
+
+                <div class="form-group">
+                    <label>Notice Message:</label>
+                    <textarea id="sms" class="neon-textarea" rows="3" placeholder="Enter app notice..."></textarea>
+                </div>
+
+                <button class="btn-neon" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);" onclick="updateApkSettings()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                </button>
+                <p id="apk-status" style="margin-top:12px; text-align:center; font-weight:700; font-size: 13px;"></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- VIP Edit Key Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeEditModal()"><i class="fa-solid fa-xmark"></i></span>
+            <div class="card-title"><i class="fa-solid fa-pen-to-square"></i> EDIT USER KEY</div>
+            
+            <input type="hidden" id="edit_old_key">
+            
+            <div class="form-group">
+                <label>Key Name / Password:</label>
+                <input type="text" id="edit_key_name" class="neon-input">
+            </div>
+
+            <div class="form-group">
+                <label>Time Action Type:</label>
+                <select id="time_action" class="neon-select">
+                    <option value="add" style="background:#090d16; color:#10b981;">➕ Add Time (+)</option>
+                    <option value="sub" style="background:#090d16; color:#ef4444;">➖ Reduce Time (-)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="time_label" style="color: var(--neon-green);">Duration to Modify:</label>
+                <div class="grid-3">
+                    <div>
+                        <input type="number" id="edit_days" class="neon-input" value="0" min="0">
+                        <label>Days</label>
+                    </div>
+                    <div>
+                        <input type="number" id="edit_hours" class="neon-input" value="0" min="0">
+                        <label>Hours</label>
+                    </div>
+                    <div>
+                        <input type="number" id="edit_mins" class="neon-input" value="0" min="0">
+                        <label>Minutes</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-neon" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="saveEditKey()">
+                <i class="fa-solid fa-check"></i> Save Changes
+            </button>
+        </div>
+    </div>
 
 <script>
-    function checkLogin() {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        if(u === "ds teem" && p === "n") { showLoading(); }
-        else { alert("Incorrect Credentials!"); }
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDSN3b3quvOaUeYdglXlR1onHzbqt4YU9g",
+        authDomain: "maruf-5ada3.firebaseapp.com",
+        databaseURL: "https://maruf-5ada3-default-rtdb.firebaseio.com",
+        projectId: "maruf-5ada3",
+        storageBucket: "maruf-5ada3.firebasestorage.app",
+        messagingSenderId: "818618948161",
+        appId: "1:818618948161:android:6ce8bdd97347f842a5c4c0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Toggle Sidebar Drawer Navigation
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
     }
 
-    function showLoading() {
-        document.getElementById('loginSection').style.display = "none";
-        document.getElementById('loadingScreen').style.display = "block";
-        let w = 0;
-        const b = document.getElementById('pBar');
-        const i = setInterval(() => {
-            if (w >= 100) {
-                clearInterval(i);
-                document.getElementById('loadingScreen').style.display = "none";
-                document.getElementById('adminPanel').style.display = "block";
-            } else { w++; b.style.width = w + '%'; }
-        }, 20);
-    }
-
-    async function masterBypass() {
-        const btn = document.getElementById('genBtn');
-        const resBox = document.getElementById('res-box');
-        const keyOut = document.getElementById('key-out');
-        const days = document.getElementById('validity').value;
+    // Switch Main Dashboard Sections
+    function switchSection(secId, elem) {
+        document.querySelectorAll('.section-pane').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+        document.getElementById(secId).classList.add('active');
+        elem.classList.add('active');
+        toggleSidebar();
+    }
 
-        const k = Math.floor(1000000000 + Math.random() * 9000000000);
-        const api = `https://adminpanels.shop/api/v1/add.php?key=${k}&duration=${days}&status=success`;
-        const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(api);
+    // Generate New Key Function
+    function addKey() {
+        const keyVal = document.getElementById('new_key').value.trim();
+        const days = parseInt(document.getElementById('inp_days').value) || 0;
+        const hours = parseInt(document.getElementById('inp_hours').value) || 0;
+        const mins = parseInt(document.getElementById('inp_mins').value) || 0;
+        const status = document.getElementById('key-status');
 
-        try {
-            // STEP 1: Handshake with Server
-            const response = await fetch(proxy);
-            
-            if(response.ok) {
-                // STEP 2: Dual-Infection Hit
-                fetch(api, { mode: 'no-cors' });
-                
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-bolt"></i> GENERATE NEW KEY';
-                    keyOut.innerText = k;
-                    document.getElementById('keyLabel').innerText = days + " DAY KEY REGISTERED";
-                    resBox.style.display = 'block';
-                    alert("SUCCESS: Server Response OK. Key Generated!");
-                }, 1000);
-            } else {
-                throw new Error("Server Reject");
+        if(!keyVal) {
+            status.style.color = 'var(--neon-red)';
+            status.innerText = 'Please enter key name!';
+            return;
+        }
+
+        if(days === 0 && hours === 0 && mins === 0) {
+            status.style.color = 'var(--neon-red)';
+            status.innerText = 'Please set duration!';
+            return;
+        }
+
+        const totalMs = ((days * 24 * 60 * 60) + (hours * 60 * 60) + (mins * 60)) * 1000;
+
+        db.ref("keys/" + keyVal).set({
+            key: keyVal,
+            durationMs: totalMs,
+            expireTime: 0,
+            deviceId: ""
+        }).then(() => {
+            status.style.color = 'var(--neon-green)';
+            status.innerText = 'Key Generated Successfully!';
+            document.getElementById('new_key').value = '';
+            document.getElementById('inp_days').value = '0';
+            document.getElementById('inp_hours').value = '0';
+            document.getElementById('inp_mins').value = '0';
+        });
+    }
+
+    // Global variables for live rendering
+    let allKeysData = {};
+    let activeRenderKeys = {};
+
+    db.ref("keys").on('value', (snapshot) => {
+        if (snapshot.exists()) {
+            allKeysData = snapshot.val();
+            filterKeys(); 
+        } else {
+            allKeysData = {};
+            document.getElementById('key-list-table').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">No keys found</td></tr>';
+        }
+    });
+
+    // Helper: Format milliseconds to Days, Hours, Minutes, Seconds
+    function formatTimeLeft(ms) {
+        if (ms <= 0) return "Expired";
+        let seconds = Math.floor((ms / 1000) % 60);
+        let minutes = Math.floor((ms / (1000 * 60)) % 60);
+        let hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+        let days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+        let res = "";
+        if (days > 0) res += days + "d ";
+        if (hours > 0 || days > 0) res += hours + "h ";
+        res += minutes + "m " + seconds + "s";
+        return res;
+    }
+
+    // Live Render Loop for Countdown (Per Second Update)
+    setInterval(() => {
+        const now = Date.now();
+        for (let keyName in activeRenderKeys) {
+            const el = document.getElementById("status-" + keyName.replace(/\s+/g, '_'));
+            if (el) {
+                const data = activeRenderKeys[keyName];
+                if (!data.expireTime || data.expireTime === 0) {
+                    el.className = "badge badge-pending";
+                    el.innerHTML = "Not Activated (" + formatTimeLeft(data.durationMs) + ")";
+                } else {
+                    const diff = data.expireTime - now;
+                    if (diff <= 0) {
+                        el.className = "badge badge-expired";
+                        el.innerHTML = "Expired";
+                    } else {
+                        el.className = "badge badge-active";
+                        el.innerHTML = formatTimeLeft(diff);
+                    }
+                }
             }
-        } catch(e) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-bolt"></i> RETRY GENERATION';
-            alert("ERROR: Server busy ya connection slow hai. Ek baar phir try karein!");
+        }
+    }, 1000);
+
+    function renderKeys(keysObj) {
+        activeRenderKeys = keysObj;
+        const tableBody = document.getElementById('key-list-table');
+        tableBody.innerHTML = '';
+        const now = Date.now();
+        
+        for (let keyName in keysObj) {
+            const data = keysObj[keyName];
+            let statusBadge = "";
+            const safeKeyId = "status-" + keyName.replace(/\s+/g, '_');
+            
+            if (!data.expireTime || data.expireTime === 0) {
+                statusBadge = `<span id="${safeKeyId}" class='badge badge-pending'>Not Activated (${formatTimeLeft(data.durationMs)})</span>`;
+            } else {
+                const diff = data.expireTime - now;
+                if (diff <= 0) {
+                    statusBadge = `<span id="${safeKeyId}" class='badge badge-expired'>Expired</span>`;
+                } else {
+                    statusBadge = `<span id="${safeKeyId}" class='badge badge-active'>${formatTimeLeft(diff)}</span>`;
+                }
+            }
+
+            tableBody.innerHTML += `
+                <tr>
+                    <td><b>${data.key || keyName}</b></td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="action-flex">
+                            <button class="btn-act btn-act-copy" onclick="copyKey('${data.key || keyName}')"><i class="fa-regular fa-copy"></i> Copy</button>
+                            <button class="btn-act btn-act-edit" onclick="openEditModal('${data.key || keyName}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn-act btn-act-unlink" onclick="unlinkDevice('${data.key || keyName}')"><i class="fa-solid fa-link-slash"></i> Unlink Device</button>
+                            <button class="btn-act btn-act-del" onclick="deleteKey('${data.key || keyName}')"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </td>
+                </tr>`;
         }
     }
 
-    function copyKey() {
-        navigator.clipboard.writeText(document.getElementById('key-out').innerText);
-        alert("Key Copied!");
+    function filterKeys() {
+        const query = document.getElementById('search_input').value.toLowerCase();
+        const filtered = {};
+        for(let k in allKeysData) {
+            if(k.toLowerCase().includes(query)) {
+                filtered[k] = allKeysData[k];
+            }
+        }
+        renderKeys(filtered);
+    }
+
+    // Edit Modal Functions
+    function openEditModal(keyName) {
+        db.ref("keys/" + keyName).once('value', (snapshot) => {
+            if(!snapshot.exists()) return;
+            const data = snapshot.val();
+            document.getElementById('edit_old_key').value = keyName;
+            document.getElementById('edit_key_name').value = data.key || keyName;
+            document.getElementById('edit_days').value = 0;
+            document.getElementById('edit_hours').value = 0;
+            document.getElementById('edit_mins').value = 0;
+            if(document.getElementById('time_action')) {
+                document.getElementById('time_action').value = 'add';
+            }
+            document.getElementById('editModal').style.display = 'flex';
+        });
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Fixed Live Time Modify Function (Works for Active and Non-Active Keys)
+    function saveEditKey() {
+        const oldKey = document.getElementById('edit_old_key').value;
+        const newKey = document.getElementById('edit_key_name').value.trim();
+        const action = document.getElementById('time_action') ? document.getElementById('time_action').value : 'add';
+        const days = parseInt(document.getElementById('edit_days').value) || 0;
+        const hours = parseInt(document.getElementById('edit_hours').value) || 0;
+        const mins = parseInt(document.getElementById('edit_mins').value) || 0;
+
+        if(!newKey) {
+            alert("Key name cannot be empty!");
+            return;
+        }
+
+        let deltaMs = ((days * 24 * 60 * 60) + (hours * 60 * 60) + (mins * 60)) * 1000;
+        if (action === 'sub') {
+            deltaMs = -deltaMs;
+        }
+
+        db.ref("keys/" + oldKey).once('value', (snapshot) => {
+            if(!snapshot.exists()) return;
+            let data = snapshot.val();
+            data.key = newKey;
+
+            const now = Date.now();
+
+            // 1. If key is already activated in the app (expireTime > 0)
+            if (data.expireTime && data.expireTime > 0) {
+                if (data.expireTime < now) {
+                    if (deltaMs > 0) data.expireTime = now + deltaMs;
+                } else {
+                    data.expireTime += deltaMs;
+                    if (data.expireTime < now) data.expireTime = now;
+                }
+            } 
+            // 2. If key is not activated yet
+            else {
+                data.durationMs = (data.durationMs || 0) + deltaMs;
+                if (data.durationMs < 0) data.durationMs = 0;
+            }
+
+            if (oldKey !== newKey) {
+                db.ref("keys/" + oldKey).remove();
+            }
+
+            db.ref("keys/" + newKey).set(data).then(() => {
+                closeEditModal();
+                alert("Key updated successfully!");
+            });
+        });
+    }
+
+    function unlinkDevice(keyName) {
+        if(confirm("Unlink device for key: '" + keyName + "'? User will be able to login on a new device.")) {
+            db.ref("keys/" + keyName).update({ deviceId: "" }).then(() => {
+                alert("Device unlinked successfully!");
+            });
+        }
+    }
+
+    function copyKey(keyText) {
+        navigator.clipboard.writeText(keyText);
+        alert("Copied Key: " + keyText);
+    }
+
+    function deleteKey(keyName) {
+        if(confirm("Delete key: '" + keyName + "'?")) {
+            db.ref("keys/" + keyName).remove();
+        }
+    }
+
+    // APK Update Logic
+    const updateRef = db.ref("update");
+    updateRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            document.getElementById('version').value = data.version || '';
+            document.getElementById('link').value = data.link || '';
+            document.getElementById('sms').value = data.sms || '';
+        }
+    });
+
+    function updateApkSettings() {
+        updateRef.update({
+            version: document.getElementById('version').value,
+            link: document.getElementById('link').value,
+            sms: document.getElementById('sms').value
+        }).then(() => {
+            document.getElementById('apk-status').style.color = 'var(--neon-green)';
+            document.getElementById('apk-status').innerText = 'APK Settings Saved!';
+        });
     }
 </script>
-
 </body>
 </html>
